@@ -40,8 +40,6 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-const bookingRouter = require("./routes/booking");
-const offerRouter = require("./routes/offer");
 const Booking = require("./models/booking");
 const Listing = require("./models/listing");
 const Offer = require("./models/offer.js");
@@ -113,8 +111,6 @@ app.use((req, res, next) => {
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
-app.use("/listings", bookingRouter);
-app.use("/listings", offerRouter);
 
 // app.get("/", (req, res) => {
 //     res.send("Hi, I am robot");
@@ -163,60 +159,123 @@ app.get("/bookings", async (req, res) => {
     res.render("bookings/index.ejs", { bookings });
 });
 
+app.get("/listings/:id/book", async(req, res) => {
+    if (!req.user) {
+        req.flash("error", "You must be logged in to book a listing.");
+        return res.redirect("/login");
+    }
+
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+    const bookings = await Booking.find({ listing: listing._id });
+
+    // res.render("bookings/new.ejs", { listingId: id, listing });
+    res.render("bookings/new.ejs", {
+        listing,
+        listingId: listing._id,
+        bookedDates: bookings
+    });
+});
+
+app.post("/listings/:id/book", async (req, res) => {
+    if (!req.user) {
+        req.flash("error", "You must be logged in to book a listing.");
+        return res.redirect("/login");
+    }
+
+    const { id } = req.params;
+    const { checkIn, checkOut } = req.body;
+
+    const listing = await Listing.findById(id);
+
+    // 🔴 overlap check
+    const overlappingBooking = await Booking.findOne({
+        listing: id,
+        checkIn: { $lt: new Date(checkOut) },
+        checkOut: { $gt: new Date(checkIn) }
+    });
+
+    if (overlappingBooking) {
+        req.flash("error", "❌ Selected dates are already booked.");
+        return res.redirect(`/listings/${id}/book`);
+    }
+
+    const days =
+        (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24);
+
+    if (days <= 0) {
+        req.flash("error", "Invalid booking dates.");
+        return res.redirect(`/listings/${id}/book`);
+    }
+
+    const totalPrice = days * listing.price;
+
+    await Booking.create({
+        listing: id,
+        user: req.user._id,
+        checkIn,
+        checkOut,
+        totalPrice
+    });
+
+    req.flash("success", "🎉 Booking confirmed!");
+    res.redirect(`/listings/${id}`);
+});
+
 
 
 // Offer Systum
-// app.get("/listings/:id/offer", async (req, res) => {
-//   const { id } = req.params;
+app.get("/listings/:id/offer", async (req, res) => {
+  const { id } = req.params;
 
-//   const listing = await Listing.findById(id);
+  const listing = await Listing.findById(id);
 
-//   res.render("offers/make", { listing });
-// });
+  res.render("offers/make", { listing });
+});
 
 
-// app.post("/listings/:id/offer", async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     console.log("REQ BODY:", req.body);
+app.post("/listings/:id/offer", async (req, res) => {
+  const { id } = req.params;
+  try {
+    console.log("REQ BODY:", req.body);
 
-//     const { offeredPrice, message } = req.body;
+    const { offeredPrice, message } = req.body;
 
-//     // login check simple
-//     if (!req.user) {
-//       req.flash("error", "Please login first");
-//       return res.redirect("/login");
-//     }
+    // login check simple
+    if (!req.user) {
+      req.flash("error", "Please login first");
+      return res.redirect("/login");
+    }
 
-//     if (!offeredPrice) {
-//       req.flash("error", "Offer price is required");
-//       return res.redirect(`/listings/${id}/offer`);
-//     }
+    if (!offeredPrice) {
+      req.flash("error", "Offer price is required");
+      return res.redirect(`/listings/${id}/offer`);
+    }
 
-//     const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id);
 
-//     if (!listing) {
-//       req.flash("error", "Listing not found");
-//       return res.redirect("/");
-//     }
+    if (!listing) {
+      req.flash("error", "Listing not found");
+      return res.redirect("/");
+    }
 
-//     await Offer.create({
-//       listing: id,
-//       buyer: req.user._id,
-//       owner: listing.owner,
-//       offeredPrice,
-//       message
-//     });
+    await Offer.create({
+      listing: id,
+      buyer: req.user._id,
+      owner: listing.owner,
+      offeredPrice,
+      message
+    });
 
-//     req.flash("success", "Offer sent to owner successfully");
-//     res.redirect(`/listings/${id}`);
+    req.flash("success", "Offer sent to owner successfully");
+    res.redirect(`/listings/${id}`);
 
-//   } catch (err) {
-//     console.log(err);
-//     req.flash("error", "Something went wrong");
-//     res.redirect(`/listings/${id}`);
-//   }
-// });
+  } catch (err) {
+    console.log(err);
+    req.flash("error", "Something went wrong");
+    res.redirect(`/listings/${id}`);
+  }
+});
 
 
 // Offer Inbox
@@ -289,8 +348,6 @@ app.get("/offers/myOffers", async (req, res) => {
 
   res.render("offers/myOffers.ejs", { myOffers });
 });
-
-
 
 app.use((err, req, res, next) => {
     let {statusCode = 500, message = "Something went wrong"} = err;

@@ -29,6 +29,26 @@ const bookingSchema = new Schema({
         default: 0
     },
 
+    // 🔥 Payment Method
+    paymentMethod: {
+        type: String,
+        enum: ["Razorpay", "Pay Later"],
+        default: "Pay Later"
+    },
+
+    // 🔥 Payment Status
+    paymentStatus: {
+        type: String,
+        enum: ["Pending", "Paid", "Failed"],
+        default: "Pending"
+    },
+
+    // 🔥 Razorpay Payment ID
+    paymentId: {
+        type: String,
+        default: null
+    },
+
     bookedAt: {
         type: Date,
         default: Date.now

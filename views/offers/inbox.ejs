@@ -1,76 +1,207 @@
-
 <% layout("/layouts/boilerplate") %>
 
-<div class="offers-wrapper">
+<div class="container mt-5 mb-5">
+
+  <h2 class="text-center fw-bold mb-4" style="color:#222;">
+    Offer Inbox
+  </h2>
 
   <% if (offers.length === 0) { %>
-    <div class="empty-inbox">
+
+    <div class="text-center mt-5">
       <h4>No offer requests yet</h4>
-      <p>
-        When guests make offers on your listings,  
-        you’ll see them here.
+
+      <p class="text-muted">
+        When guests make offers on your listings, you’ll see them here.
       </p>
-      <a href="/listings" class="empty-btn">
-        View Your Listings
+
+      <a href="/listings" class="btn btn-danger rounded-pill px-4 mt-2">
+        View Listings
       </a>
     </div>
+
   <% } else { %>
 
-  <% offers.forEach(offer => { %>
-    <div class="offer-card">
+  <div class="table-responsive shadow-sm rounded-4 border overflow-hidden">
 
-      <!-- Top row -->
-      <div class="offer-top">
-        <h5 class="listing-title"><%= offer.listing.title %></h5>
+    <table class="table align-middle mb-0 text-center">
 
-        <span class="status-pill <%= offer.status %>">
-          <%= offer.status %>
-        </span>
-      </div>
+      <!-- HEADER -->
+      <thead style="background:#fff;">
+        <tr>
+          <th class="py-4">Listing</th>
+          <th class="py-4">Guest</th>
+          <th class="py-4">Offer Price</th>
+          <th class="py-4">Message</th>
+          <th class="py-4">Status</th>
+          <th class="py-4">Action</th>
+        </tr>
+      </thead>
 
-      <!-- Meta -->
-      <p class="from-text">
-        From: <span><%= offer.buyer.username %></span>
-      </p>
+      <tbody>
 
-      <!-- Price -->
-      <p class="price-text">
-        Offered Price: ₹ <%= offer.offeredPrice %>
-      </p>
+      <% offers.forEach(offer => { %>
 
-      <!-- Message -->
-      <% if (offer.message) { %>
-        <p class="message-text">
-          “<%= offer.message %>”
-        </p>
-      <% } %>
+        <tr>
 
-      <!-- Actions -->
-      <% if (offer.status === "pending") { %>
-        <div class="offer-actions">
-          <form 
-            action="/offers/<%= offer._id %>/accept"
-            method="POST"
-            class="d-inline"
-          >
-            <button class="accept-btn">
-              Accept
-            </button>
-          </form>
+          <!-- Listing -->
+          <td class="fw-semibold">
+            <%= offer.listing.title %>
+          </td>
 
-          <form 
-            action="/offers/<%= offer._id %>/reject"
-            method="POST"
-            class="d-inline ms-2"
-          >
-            <button class="reject-btn">
-              Reject
-            </button>
-          </form>
-        </div>
-      <% } %>
+          <!-- Guest -->
+          <td>
+            <%= offer.buyer.username %>
+          </td>
 
-    </div>
-  <% }) %>
+          <!-- Offer Price -->
+          <td class="fw-bold text-success">
+            ₹ <%= offer.offeredPrice %>
+          </td>
+
+          <!-- Message -->
+          <td>
+
+            <% if (offer.message) { %>
+
+              <button 
+                class="btn btn-sm btn-outline-dark rounded-pill px-3"
+                data-bs-toggle="modal"
+                data-bs-target="#msgModal<%= offer._id %>">
+
+                View
+              </button>
+
+              <!-- Modal -->
+              <div 
+                class="modal fade" 
+                id="msgModal<%= offer._id %>" 
+                tabindex="-1">
+
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content rounded-4">
+
+                    <div class="modal-header border-0 pb-0">
+                      <h5 class="modal-title fw-bold">
+                        Offer Message
+                      </h5>
+
+                      <button 
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                      </button>
+                    </div>
+
+                    <div class="modal-body pt-2">
+                      <p class="text-muted mb-0">
+                        "<%= offer.message %>"
+                      </p>
+                    </div>
+
+                    <div class="modal-footer border-0 pt-0">
+                      <button 
+                        class="btn btn-danger rounded-pill px-4"
+                        data-bs-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            <% } else { %>
+
+              <span class="text-muted">—</span>
+
+            <% } %>
+
+          </td>
+
+          <!-- Status -->
+          <td>
+
+            <% if (offer.status === "pending") { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#fff3cd; color:#856404;">
+                Pending
+              </span>
+
+            <% } else if (offer.status === "accepted") { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#d4edda; color:#155724;">
+                Accepted
+              </span>
+
+            <% } else { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#f8d7da; color:#721c24;">
+                Rejected
+              </span>
+
+            <% } %>
+
+          </td>
+
+          <!-- Action -->
+          <td>
+
+            <% if (offer.status === "pending") { %>
+
+              <div class="d-flex justify-content-center gap-2">
+
+                <form 
+                  action="/offers/<%= offer._id %>/accept" 
+                  method="POST">
+
+                  <button 
+                    class="btn btn-success btn-sm rounded-pill px-3">
+                    Accept
+                  </button>
+
+                </form>
+
+                <form 
+                  action="/offers/<%= offer._id %>/reject" 
+                  method="POST">
+
+                  <button 
+                    class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    Reject
+                  </button>
+
+                </form>
+
+              </div>
+
+            <% } else { %>
+
+              <span class="text-muted">
+                Done
+              </span>
+
+            <% } %>
+
+          </td>
+
+        </tr>
+
+      <% }) %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
   <% } %>
+
 </div>

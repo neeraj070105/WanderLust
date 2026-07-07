@@ -1,51 +1,145 @@
-
 <% layout("/layouts/boilerplate") %>
 
-<div class="offers-wrapper">
+<div class="container mt-5 mb-5">
 
-  <% if (myOffers.length === 0) { %>
-    <div class="empty-state">
-        <h4>No offers yet</h4>
-        <p>
-            You haven’t made any offers yet.  
-            Explore listings and make your first offer.
-        </p>
+  <h2 class="text-center fw-bold mb-4" style="color:#222;">
+    My Offers
+  </h2>
 
-        <a href="/listings" class="empty-btn">
-            Explore Listings
-        </a>
+  <% if(myOffers.length === 0) { %>
+
+    <div class="text-center mt-5">
+
+      <h4>No offers yet</h4>
+
+      <p class="text-muted">
+        You haven’t made any offers yet.
+      </p>
+
+      <a href="/listings"
+         class="btn rounded-pill px-4"
+         style="background:#fe424d; color:white; border:none;">
+        Explore Listings
+      </a>
+
     </div>
+
   <% } else { %>
 
-    <h3 class="offers-title text-center">Your Offer Requests</h3>
-    <% myOffers.forEach(offer => { %>
-      <div class="offer-card">
+  <div class="table-responsive">
 
-        <div class="offer-top">
-          <h5 class="listing-title"><%= offer.listing.title %></h5>
+    <table class="table align-middle text-center shadow-sm bg-white rounded-4 overflow-hidden">
 
-          <span class="status 
-            <%= offer.status === 'accepted' ? 'accepted' : 
-                offer.status === 'rejected' ? 'rejected' : 'pending' %>">
-            <%= offer.status %>
-          </span>
-        </div>
+      <!-- Heading -->
+      <thead style="background:#fff5f5;">
 
-        <p class="price">
-        <span class="actual-price">
-            Actual: ₹ <%= offer.listing.price %>
-        </span>
-        <span class="offered-price">
-            Offered: ₹ <%= offer.offeredPrice %>
-        </span>
-        </p>
+        <tr>
 
-        <% if (offer.message) { %>
-          <p class="message"> <b>Request Msg:</b> “<%= offer.message %>”</p>
-        <% } %>
+          <th class="py-3 border-0">Listing</th>
+          <th class="py-3 border-0">Actual Price</th>
+          <th class="py-3 border-0">Offered Price</th>
+          <th class="py-3 border-0">Status</th>
+          <th class="py-3 border-0">Action</th>
 
-      </div>
-    <% }) %>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <% myOffers.forEach((offer) => { %>
+
+        <tr style="border-top:1px solid #f1f1f1;">
+
+          <!-- Listing -->
+          <td class="fw-semibold py-4 border-0">
+            <%= offer.listing.title %>
+          </td>
+
+          <!-- Actual Price -->
+          <td class="py-4 border-0 text-muted fw-semibold">
+            ₹ <%= offer.listing.price.toLocaleString("en-IN") %>
+          </td>
+
+          <!-- Offered Price -->
+          <td class="fw-bold py-4 border-0" style="color:#fe424d;">
+            ₹ <%= offer.offeredPrice.toLocaleString("en-IN") %>
+          </td>
+
+          <!-- Status -->
+          <td class="py-4 border-0">
+
+            <% if(offer.status === "accepted") { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#d4edda; color:#155724;">
+                Accepted
+              </span>
+
+            <% } else if(offer.status === "rejected") { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#f8d7da; color:#721c24;">
+                Rejected
+              </span>
+
+            <% } else { %>
+
+              <span 
+                class="badge rounded-pill px-3 py-2"
+                style="background:#fff3cd; color:#856404;">
+                Pending
+              </span>
+
+            <% } %>
+
+          </td>
+
+          <!-- Action -->
+          <td class="py-4 border-0">
+
+            <% if(offer.status === "accepted") { %>
+
+              <a href="/listings/<%= offer.listing._id %>/offers/<%= offer._id %>/book"
+                 class="btn btn-sm rounded-pill px-3"
+                 style="
+                   background:white;
+                   color:#fe424d;
+                   border:1px solid #fe424d;
+                   font-weight:600;
+                   transition:0.3s;
+                 "
+                 onmouseover="
+                   this.style.background='#fe424d';
+                   this.style.color='white';
+                 "
+                 onmouseout="
+                   this.style.background='white';
+                   this.style.color='#fe424d';
+                 ">
+                Book Now
+              </a>
+
+            <% } else { %>
+
+              <span class="text-muted">—</span>
+
+            <% } %>
+
+          </td>
+
+        </tr>
+
+        <% }) %>
+
+      </tbody>
+
+    </table>
+
+  </div>
 
   <% } %>
+
 </div>

@@ -1,4 +1,5 @@
 const Listing = require("../models/listing");
+const axios = require("axios");
 
 module.exports.index = async (req, res) => {
     const allListings = await Listing.find({});
@@ -32,9 +33,36 @@ module.exports.createListing = async(req, res, next) => {
     let filename = req.file.filename;
 
     let listing = req.body.Listing;
+
+    // 🔥 API CALL (OpenCage)
+    const geoData = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
+        params: {
+            q: listing.location,
+            key: "a67ab4e705534d478ad34593e62abf48"
+        }
+    });
+
+    // ❌ agar location galat ho
+    if (!geoData.data.results.length) {
+        req.flash("error", "Invalid location");
+        return res.redirect("/listings/new");
+    }
+
+    const coords = geoData.data.results[0].geometry;
+
     const newListing = new Listing(listing);
     newListing.owner = req.user._id;
     newListing.image = { url, filename };
+
+    // console.log("LOCATION:", listing.location);
+    // console.log("COORDINATES:", coords);
+
+
+    newListing.geometry = {
+        type: "Point",
+        coordinates: [coords.lng, coords.lat] // Delhi (temporary)
+    };
+
     await newListing.save();
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");

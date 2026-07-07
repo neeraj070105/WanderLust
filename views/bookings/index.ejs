@@ -2,65 +2,137 @@
 
 <% layout("/layouts/boilerplate") %>
 
-<div class="offers-wrapper">
-  <h3 class="offers-title text-center">All Bookings</h3>
+<div class="container mt-5 mb-5">
 
-  <% if (bookings.length === 0) { %>
-    <div class="empty-state">
+  <h2 class="text-center fw-bold mb-4" style="color:#222;">
+    My Bookings
+  </h2>
+
+  <% if(bookings.length === 0) { %>
+
+    <div class="text-center mt-5">
       <h4>No bookings yet</h4>
-      <p>
-        You haven’t booked any place yet.  
-        Explore listings and plan your next stay.
+      <p class="text-muted">
+        You haven’t booked any place yet.
       </p>
 
-      <a href="/listings" class="empty-btn">
+      <a href="/listings"
+         class="btn rounded-pill px-4"
+         style="background:#fe424d; color:white; border:none;">
         Explore Stays
       </a>
     </div>
+
+  <% } else { %>
+
+  <div class="table-responsive">
+
+    <table class="table align-middle text-center shadow-sm bg-white rounded-4 overflow-hidden">
+
+      <!-- Heading -->
+      <thead style="background:#fff5f5;">
+
+        <tr style="border:none;">
+
+          <th class="py-3 border-0">Listing</th>
+          <th class="py-3 border-0">Dates</th>
+          <th class="py-3 border-0">Total</th>
+          <th class="py-3 border-0">Payment</th>
+          <th class="py-3 border-0">Status</th>
+          <th class="py-3 border-0">Action</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <% bookings.forEach((booking) => { %>
+
+        <tr style="border-top:1px solid #f1f1f1;">
+
+          <!-- Listing -->
+          <td class="fw-semibold py-4 border-0">
+            <%= booking.listing?.title %>
+          </td>
+
+          <!-- Dates -->
+          <td class="py-4 border-0 text-muted">
+            <%= booking.checkIn.toDateString() %>
+            <br>
+            to
+            <br>
+            <%= booking.checkOut.toDateString() %>
+          </td>
+
+          <!-- Total -->
+          <td class="fw-bold py-4 border-0" style="color:#16a34a;">
+            ₹ <%= booking.totalPrice.toLocaleString("en-IN") %>
+          </td>
+
+          <!-- Payment -->
+          <td class="py-4 border-0">
+
+            <% if(booking.paymentStatus === "Paid") { %>
+
+              <span class="badge rounded-pill px-3 py-2"
+                    style="background:#dcfce7; color:#15803d;">
+                Paid ✓
+              </span>
+
+            <% } else if(booking.paymentStatus === "Failed") { %>
+
+              <span class="badge rounded-pill px-3 py-2"
+                    style="background:#fee2e2; color:#dc2626;">
+                Failed ✕
+              </span>
+
+            <% } else { %>
+
+              <span class="badge rounded-pill px-3 py-2"
+                    style="background:#fef3c7; color:#b45309;">
+                Pending ⏳
+              </span>
+
+            <% } %>
+
+          </td>
+
+          <!-- Booking Status -->
+          <td class="py-4 border-0">
+
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#ffe4e6; color:#fe424d;">
+              Confirmed
+            </span>
+
+          </td>
+
+          <!-- Action -->
+          <td class="py-4 border-0">
+
+            <a href="/bookings/<%= booking._id %>/cancel"
+               class="btn btn-sm rounded-pill px-3"
+               style="
+                 border:1px solid #fe424d;
+                 color:#fe424d;
+                 background:white;
+               ">
+              Cancel
+            </a>
+
+          </td>
+
+        </tr>
+
+        <% }) %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
   <% } %>
 
-  <% bookings.forEach((booking) => { %>
-    <div class="offer-card booking-card">
-
-      <!-- Top row -->
-      <div class="offer-top">
-        <h5 class="listing-title">
-          <%= booking.listing?.title %>
-        </h5>
-
-        <span class="status-pill accepted">
-          Booked
-        </span>
-      </div>
-
-      <!-- Dates -->
-      <div class="booking-dates">
-        <p>
-          <b>Check In:</b> <%= booking.checkIn.toDateString() %>
-        </p>
-        <p>
-          <b>Check Out:</b> <%= booking.checkOut.toDateString() %>
-        </p>
-      </div>
-
-      <!-- Price -->
-      <p class="price-text">
-        Total Price: ₹ <%= booking.totalPrice.toLocaleString("en-IN") %>
-      </p>
-
-      <!-- Meta -->
-      <p class="meta-text">
-        Booked on <%= booking.bookedAt.toDateString() %>
-      </p>
-
-      <!-- Action -->
-      <a 
-        href="/bookings/<%= booking._id %>/cancel"
-        class="cancel-btn"
-      >
-        Cancel Booking
-      </a>
-
-    </div>
-  <% }) %>
 </div>

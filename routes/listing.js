@@ -10,7 +10,8 @@ const {isOwner, validateListing } = require("../middleware.js");
 const listingController = require("../controllers/listing.js");
 const multer  = require('multer');
 const {storage} = require("../cloudConfig.js");
-const upload = multer({ storage });  
+// const upload = multer({ dest: 'uploads/' });  // yha hum multer ka storage option use kr rhe h kyounki hume file ko cloudinary pe upload krna h , agar hum dest use krte to file local folder me save hoti
+const upload = multer({ storage });   // multer ka use file upload krne k liye hota h  , yha hum cloudinary k storage ko use kr rhe h
 // Router.route
 router 
     .route("/")
@@ -21,13 +22,35 @@ router
         validateListing,
         wrapAsync (listingController.createListing),
     );
-    // .post(upload.single('listing[image'), (req, res) => {
-    //     res.send(req.file);
-    // });
     
 
 // New Route   -> "/new" vle ko id vle route se upr rakhna pdega 
 router.get("/new", isLoggedIn, listingController.renderNewForm );
+
+
+router.get("/search", async (req, res) => {
+  const search = req.query.q;
+
+  if (!search || search.trim() === "") {
+    return res.redirect("/listings");
+  }
+
+  const listings = await Listing.find({
+    $or: [
+      { title: { $regex: search, $options: "i" } },
+      { location: { $regex: search, $options: "i" } },
+      { country: { $regex: search, $options: "i" } }
+    ]
+  });
+
+  if (listings.length === 0) {
+    req.flash("error", "No listings found!");
+    return res.redirect("/listings");
+  }
+
+  res.render("listings/index", { allListings: listings });
+});
+
 
 router.
     route("/:id") 
@@ -87,5 +110,7 @@ router.get(
 // app.all("*", (req, res, next) => {
 //     next(new ExpressError(404, "Page Not Found!"));
 // });
+
+
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const express = require("express");
-// jbb bhi koi aisa model ho usme parent route ki need pdd skti h jse yha review ka parent listing kineed to vha mergeParams ko true kr dena 
+// jbb bhi koi aisa model ho usme parent route ki need pdd skti h jse yha review ka parent listing ki need to vha mergeParams ko true kr dena 
 const router = express.Router({ mergeParams : true });
 
 // yha hum double dot use krna pdega kyounki hum parent directory k pss ja rhe h 

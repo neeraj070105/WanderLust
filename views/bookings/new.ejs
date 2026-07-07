@@ -1,10 +1,10 @@
 <% layout("/layouts/boilerplate") %>
 
-
 <div class="container mt-5" style="max-width:600px;">
   <h3 class="mb-4">Book this listing :</h3>
 
-  <form method="POST" action="/listings/<%= listingId %>/book">
+  <!-- IMPORTANT: form ko id diya hai -->
+  <form method="POST" action="/listings/<%= listingId %>/book" id="bookingForm">
 
     <div class="mb-3">
       <label class="form-label">Check In</label>
@@ -30,7 +30,6 @@
       >
     </div>
 
-    <!-- Optional: price preview (read-only) -->
     <div class="mb-3">
       <label class="form-label">Total Price</label>
       <input 
@@ -42,8 +41,15 @@
       >
     </div>
 
+    <!-- Hidden fields -->
+    <input type="hidden" name="paymentMethod" id="paymentMethod">
+    <input type="hidden" name="paymentStatus" id="paymentStatus">
+    <input type="hidden" name="paymentId" id="paymentId">
+    <input type="hidden" name="pricePerNight" value="<%= listing.price %>">
+
     <button 
-      type="submit"
+      type="button"
+      id="bookBtn"
       class="btn w-100 mt-3"
       style="
         background-color:#fe424d;
@@ -60,13 +66,21 @@
   </form>
 </div>
 
-<script>
-  const pricePerNight = Number("<%= listing.price %>");
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<script>
+window.onload = function () {
+
+  const form = document.getElementById("bookingForm");
+  const btn = document.getElementById("bookBtn");
+
+  const pricePerNight = Number("<%= listing.price %>");
   const checkInInput = document.getElementById("checkIn");
   const checkOutInput = document.getElementById("checkOut");
   const totalPriceInput = document.getElementById("totalPrice");
 
+  // Price Calculate
   function calculatePrice() {
     if (!checkInInput.value || !checkOutInput.value) {
       totalPriceInput.value = "₹ 0";
@@ -89,31 +103,71 @@
 
   checkInInput.addEventListener("change", calculatePrice);
   checkOutInput.addEventListener("change", calculatePrice);
-</script>
 
-<script>
-  const bookedRanges = <%- JSON.stringify(bookedDates) %>;
-
-  function isDateBlocked(date) {
-    return bookedRanges.some(b => {
-      const start = new Date(b.checkIn);
-      const end = new Date(b.checkOut);
-      return date >= start && date < end;
-    });
+  // Current total nikalne ke liye
+  function getCurrentTotal() {
+    const text = totalPriceInput.value;
+    return Number(text.replace(/[₹,\s]/g, ""));
   }
 
-  function validateDates() {
-    if (!checkInInput.value || !checkOutInput.value) return;
+  // Button click
+  btn.addEventListener("click", function () {
 
-    const ci = new Date(checkInInput.value);
-    const co = new Date(checkOutInput.value);
+    const choice = confirm(
+      "OK = Pay Online\nCancel = Pay Later"
+    );
 
-    if (isDateBlocked(ci) || isDateBlocked(co)) {
-      alert("❌ Selected dates are already booked.");
-      checkOutInput.value = "";
+    // Pay Online
+    if (choice) {
+
+      fetch("/listings/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount: getCurrentTotal()
+        })
+      })
+      .then(res => res.json())
+      .then(order => {
+
+        const options = {
+          key: "<%= razorpayKeyId %>",
+          amount: order.amount,
+          currency: "INR",
+          name: "Wanderlust",
+          description: "Booking Payment",
+          order_id: order.id,
+
+          handler: function (response) {
+
+            document.getElementById("paymentMethod").value = "Razorpay";
+            document.getElementById("paymentStatus").value = "Paid";
+            document.getElementById("paymentId").value =
+              response.razorpay_payment_id;
+
+            form.submit();   // IMPORTANT FIX
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+      });
+
     }
-  }
 
-  checkInInput.addEventListener("change", validateDates);
-  checkOutInput.addEventListener("change", validateDates);
+    // Pay Later
+    else {
+
+      document.getElementById("paymentMethod").value = "Pay Later";
+      document.getElementById("paymentStatus").value = "Pending";
+
+      form.submit();   // IMPORTANT FIX
+    }
+
+  });
+
+};
 </script>
