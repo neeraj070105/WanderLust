@@ -25,52 +25,7 @@ router.get("/:id/book", async (req, res) => {
 });
 
 
-// Create booking
 
-
-// router.post("/:id/book", async (req, res) => {
-//     if (!req.user) {
-//         req.flash("error", "You must be logged in to book a listing.");
-//         return res.redirect("/login");
-//     }
-
-//     const { id } = req.params;
-//     const { checkIn, checkOut } = req.body;
-
-//     const listing = await Listing.findById(id);
-
-//     const overlappingBooking = await Booking.findOne({
-//         listing: id,
-//         checkIn: { $lt: new Date(checkOut) },
-//         checkOut: { $gt: new Date(checkIn) }
-//     });
-
-//     if (overlappingBooking) {
-//         req.flash("error", "❌ Selected dates are already booked.");
-//         return res.redirect(`/listings/${id}/book`);
-//     }
-
-//     const days =
-//         (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24);
-
-//     if (days <= 0) {
-//         req.flash("error", "Invalid booking dates.");
-//         return res.redirect(`/listings/${id}/book`);
-//     }
-
-//     const totalPrice = days * listing.price;
-
-//     await Booking.create({
-//         listing: id,
-//         user: req.user._id,
-//         checkIn,
-//         checkOut,
-//         totalPrice
-//     });
-
-//     req.flash("success", "🎉 Booking confirmed!");
-//     res.redirect(`/listings/${id}`);
-// });
 
 
 // Create booking
@@ -83,13 +38,6 @@ router.post("/:id/book", async (req, res) => {
 
     const { id } = req.params;
 
-    // const {
-    //     checkIn,
-    //     checkOut,
-    //     pricePerNight
-    // } = req.body;
-
-
     // payment k liye extra fields add kiye hain
     const {
         checkIn,
@@ -99,9 +47,6 @@ router.post("/:id/book", async (req, res) => {
         paymentStatus,
         paymentId
     } = req.body;
-
-
-
 
 
     const listing = await Listing.findById(id);
@@ -131,15 +76,6 @@ router.post("/:id/book", async (req, res) => {
         Number(pricePerNight) || listing.price;
 
     const totalPrice = days * finalPrice;
-
-    // await Booking.create({
-    //     listing: id,
-    //     user: req.user._id,
-    //     checkIn,
-    //     checkOut,
-    //     totalPrice,
-    // });
-
 
 
     // Payment details bhi save karne hain

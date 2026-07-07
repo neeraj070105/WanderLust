@@ -24,17 +24,6 @@ module.exports.isOwner = async (req, res, next) => {
     let {id} = req.params;
     let listing = await Listing.findById(id);
 
-    // // agar listing hi na mile
-    // if (!listing) {
-    //     req.flash("error", "Listing not found!");
-    //     return res.redirect("/listings");
-    // }
-
-    // // agar owner hi nahi hai (undefined)
-    // if (!listing.owner) {
-    //     req.flash("error", "This listing has no owner assigned.");
-    //     return res.redirect("/listings");
-    // }
 
     // agar logged-in user owner nahi hai
     if(!listing.owner._id.equals(res.locals.currUser._id)) {

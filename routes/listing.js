@@ -68,19 +68,6 @@ router.
         wrapAsync (listingController.destroyListing)
     );
 
-// Index Route
-// router.get("/", wrapAsync (listingController.index));
-
-// Show Route
-// router.get("/:id", wrapAsync (listingController.showListing));
-
-// Create Route
-// router.post(
-//     "/", 
-//     isLoggedIn, 
-//     validateListing, 
-//     wrapAsync (listingController.createListing)
-// );
 
 // Edit Route
 router.get(
@@ -89,27 +76,6 @@ router.get(
     isOwner, 
     wrapAsync (listingController.renderEditForm)
 );
-
-// Update Route
-// router.put(
-//     "/:id",
-//     isLoggedIn, 
-//     isOwner,
-//     validateListing,
-//     wrapAsync (listingController.updateListing)
-// );
-
-// Delete Route
-// router.delete(
-//     "/:id", 
-//     isLoggedIn, 
-//     isOwner,
-//     wrapAsync (listingController.destroyListing)
-// );
-
-// app.all("*", (req, res, next) => {
-//     next(new ExpressError(404, "Page Not Found!"));
-// });
 
 
 

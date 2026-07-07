@@ -54,8 +54,6 @@ module.exports.createListing = async(req, res, next) => {
     newListing.owner = req.user._id;
     newListing.image = { url, filename };
 
-    // console.log("LOCATION:", listing.location);
-    // console.log("COORDINATES:", coords);
 
 
     newListing.geometry = {

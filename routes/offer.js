@@ -58,14 +58,10 @@ router.post("/:id/offer", async (req, res) => {
 });
 
 
-// ==========================================
 // 3. BOOK NOW PAGE
 // ONLY IF OFFER ACCEPTED
 // GET /listings/:id/offers/:offerId/book
-// ==========================================
-// ==========================================
 // BOOK NOW PAGE FOR ACCEPTED OFFER
-// ==========================================
 router.get("/:id/offers/:offerId/book", async (req, res) => {
 
     const { id, offerId } = req.params;

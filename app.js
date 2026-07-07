@@ -9,20 +9,6 @@ const app = express();
 const mongoose = require("mongoose");
 
 
-// const { GoogleGenerativeAI } = require("@google/generative-ai");
-// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// OpenAI API Setup
-// const OpenAI = require("openai");
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY
-// });
-// yha tkk setup h AI ka
-
-
-// NOTE : jo jo file men comment krii h iska mtln h ab vo file yha use nhi ho rhi h vo Express Router vli new files m use ho rhi h 
-
 // const Listing = require("./models/listing.js");         
 const path = require("path");  // ejs k liye 
 const methodOverride = require("method-override");
@@ -98,16 +84,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// app.get("/demouser", async (req, res) => {
-//     let fakeUser = new User({
-//         email : "student@gmail.com",
-//         username : "delta-student",
-//     });
 
-//     let registeredUser = await User.register(fakeUser, "helloWorld"); // user method fakeuser ko database m store kra deta h 
-//     // here helloworld is our password
-//     res.send(registeredUser);
-// });
 
 // Express Router
 app.use("/listings", listingRouter);
@@ -116,13 +93,7 @@ app.use("/", userRouter);
 app.use("/listings", bookingRouter);
 app.use("/listings", offerRouter);
 
-// app.get("/", (req, res) => {
-//     res.send("Hi, I am robot");
-// });
 
-// app.all("*", (req, res, next) => {
-//     next(new ExpressError(404, "Page Not Found!"));
-// });
 
 
 app.get("/bookings/:id/cancel", async (req, res) => {
@@ -165,58 +136,7 @@ app.get("/bookings", async (req, res) => {
 
 
 
-// Offer Systum
-// app.get("/listings/:id/offer", async (req, res) => {
-//   const { id } = req.params;
 
-//   const listing = await Listing.findById(id);
-
-//   res.render("offers/make", { listing });
-// });
-
-
-// app.post("/listings/:id/offer", async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     console.log("REQ BODY:", req.body);
-
-//     const { offeredPrice, message } = req.body;
-
-//     // login check simple
-//     if (!req.user) {
-//       req.flash("error", "Please login first");
-//       return res.redirect("/login");
-//     }
-
-//     if (!offeredPrice) {
-//       req.flash("error", "Offer price is required");
-//       return res.redirect(`/listings/${id}/offer`);
-//     }
-
-//     const listing = await Listing.findById(id);
-
-//     if (!listing) {
-//       req.flash("error", "Listing not found");
-//       return res.redirect("/");
-//     }
-
-//     await Offer.create({
-//       listing: id,
-//       buyer: req.user._id,
-//       owner: listing.owner,
-//       offeredPrice,
-//       message
-//     });
-
-//     req.flash("success", "Offer sent to owner successfully");
-//     res.redirect(`/listings/${id}`);
-
-//   } catch (err) {
-//     console.log(err);
-//     req.flash("error", "Something went wrong");
-//     res.redirect(`/listings/${id}`);
-//   }
-// });
 
 
 // Offer Inbox
