@@ -1,5 +1,6 @@
 
 
+
 <% layout("/layouts/boilerplate") %>
 
 <div class="container mt-5 mb-5">
@@ -11,7 +12,9 @@
   <% if(bookings.length === 0) { %>
 
     <div class="text-center mt-5">
+
       <h4>No bookings yet</h4>
+
       <p class="text-muted">
         You haven’t booked any place yet.
       </p>
@@ -21,6 +24,7 @@
          style="background:#fe424d; color:white; border:none;">
         Explore Stays
       </a>
+
     </div>
 
   <% } else { %>
@@ -29,15 +33,13 @@
 
     <table class="table align-middle text-center shadow-sm bg-white rounded-4 overflow-hidden">
 
-      <!-- Heading -->
       <thead style="background:#fff5f5;">
 
-        <tr style="border:none;">
+        <tr>
 
           <th class="py-3 border-0">Listing</th>
           <th class="py-3 border-0">Dates</th>
           <th class="py-3 border-0">Total</th>
-          <th class="py-3 border-0">Payment</th>
           <th class="py-3 border-0">Status</th>
           <th class="py-3 border-0">Action</th>
 
@@ -70,39 +72,11 @@
             ₹ <%= booking.totalPrice.toLocaleString("en-IN") %>
           </td>
 
-          <!-- Payment -->
-          <td class="py-4 border-0">
-
-            <% if(booking.paymentStatus === "Paid") { %>
-
-              <span class="badge rounded-pill px-3 py-2"
-                    style="background:#dcfce7; color:#15803d;">
-                Paid ✓
-              </span>
-
-            <% } else if(booking.paymentStatus === "Failed") { %>
-
-              <span class="badge rounded-pill px-3 py-2"
-                    style="background:#fee2e2; color:#dc2626;">
-                Failed ✕
-              </span>
-
-            <% } else { %>
-
-              <span class="badge rounded-pill px-3 py-2"
-                    style="background:#fef3c7; color:#b45309;">
-                Pending ⏳
-              </span>
-
-            <% } %>
-
-          </td>
-
           <!-- Booking Status -->
           <td class="py-4 border-0">
 
             <span class="badge rounded-pill px-3 py-2"
-                  style="background:#ffe4e6; color:#fe424d;">
+                  style="background:#dcfce7; color:#15803d;">
               Confirmed
             </span>
 

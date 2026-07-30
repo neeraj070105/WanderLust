@@ -85,14 +85,12 @@ app.use((req, res, next) => {
 });
 
 
-
 // Express Router
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 app.use("/listings", bookingRouter);
 app.use("/listings", offerRouter);
-
 
 
 
@@ -133,8 +131,6 @@ app.get("/bookings", async (req, res) => {
 
     res.render("bookings/index.ejs", { bookings });
 });
-
-
 
 
 
@@ -209,7 +205,6 @@ app.get("/offers/myOffers", async (req, res) => {
 
   res.render("offers/myOffers.ejs", { myOffers });
 });
-
 
 
 app.use((err, req, res, next) => {

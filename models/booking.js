@@ -1,58 +1,48 @@
+
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema({
+
+    // Booked Listing
     listing: {
         type: Schema.Types.ObjectId,
         ref: "Listing",
         required: true
     },
+
+    // User who booked the listing
     user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
 
-    // dates
+    // Check-In Date
     checkIn: {
         type: Date,
         required: true
     },
+
+    // Check-Out Date
     checkOut: {
         type: Date,
         required: true
     },
 
-    // price related (later calculate karenge)
+    // Total Booking Price
     totalPrice: {
         type: Number,
-        default: 0
+        required: true
     },
 
-    // 🔥 Payment Method
-    paymentMethod: {
-        type: String,
-        enum: ["Razorpay", "Pay Later"],
-        default: "Pay Later"
-    },
-
-    // 🔥 Payment Status
-    paymentStatus: {
-        type: String,
-        enum: ["Pending", "Paid", "Failed"],
-        default: "Pending"
-    },
-
-    // 🔥 Razorpay Payment ID
-    paymentId: {
-        type: String,
-        default: null
-    },
-
+    // Booking Created At
     bookedAt: {
         type: Date,
         default: Date.now
     }
+
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);
