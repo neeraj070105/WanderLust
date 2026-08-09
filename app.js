@@ -16,6 +16,7 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
+const { MongoStore } = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -41,16 +42,31 @@ app.use(express.json());
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+const store = MongoStore.create({
+    mongoUrl: process.env.MONGO_URL,
+    crypto: {
+        secret: "mysupersecretcode",
+    },
+    touchAfter: 24 * 3600,
+});
+
+store.on("error", (err) => {
+    console.log("ERROR in MONGO SESSION STORE", err);
+});
+
 const sessionOptions = {
-    secret : "mysupersecretcode",
-    resave : false,
-    saveUninitialized : true,
+    store: store,
+    secret: "mysupersecretcode",
+    resave: false,
+    saveUninitialized: false,
+
     cookie: {
-        expires : Date.now() + 7*24*60*60*1000,
-        maxAge : 7*24*60*60*1000,
-        httpOnly : true,
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
     },
 };
+
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -63,7 +79,7 @@ app.use(passport.session());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-const MONGO_URL  = "mongodb://127.0.0.1:27017/wanderlust";
+const MONGO_URL = process.env.MONGO_URL;
 
 main() 
     .then(() => {
@@ -215,5 +231,4 @@ app.use((err, req, res, next) => {
 
 app.listen(8080, () => {
     console.log("Serving is listening to port 8080");
-    // console.log("KEY:", process.env.GEMINI_API_KEY);
 });
