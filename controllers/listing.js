@@ -38,9 +38,10 @@ module.exports.createListing = async(req, res, next) => {
     const geoData = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
         params: {
             q: listing.location,
-            key: "a67ab4e705534d478ad34593e62abf48"
+            key: process.env.OPENCAGE_API_KEY
         }
     });
+
 
     // ❌ agar location galat ho
     if (!geoData.data.results.length) {
@@ -97,7 +98,6 @@ module.exports.updateListing = async (req, res) => {
 module.exports.destroyListing = async (req, res) => {
     let {id} = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
     req.flash("success", "Listing Deleted");
     res.redirect("/listings");
 };

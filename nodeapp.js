@@ -20,7 +20,7 @@ async function fixListings() {
       const geoData = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
         params: {
           q: listing.location,
-          key: "a67ab4e705534d478ad34593e62abf48"
+          key: process.env.OPENCAGE_API_KEY
         }
       });
 
