@@ -1,113 +1,761 @@
-
-
-
-
-
 <% layout("/layouts/boilerplate") %>
 
-<div class="container mt-5" style="max-width:600px;">
-  <h3 class="mb-4">Book this listing :</h3>
+<style>
+  .booking-page-container {
+    max-width: 1100px;
+    margin: 2.5rem auto 3.5rem auto;
+  }
 
-  <form method="POST" action="/listings/<%= listingId %>/book" id="bookingForm">
+  .booking-card {
+    background: #ffffff;
+    border-radius: 1.25rem;
+    border: 1px solid #edf0f4;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    height: 100%;
+  }
 
-    <div class="mb-3">
-      <label class="form-label">Check In</label>
-      <input
-        type="date"
-        name="checkIn"
-        id="checkIn"
-        min="<%= new Date().toISOString().split('T')[0] %>"
-        class="form-control"
-        required
-      >
+  /* Calendar Header */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .calendar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222222;
+    margin: 0;
+  }
+
+  .calendar-nav-btn {
+    border: none;
+    background: transparent;
+    color: #222222;
+    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .calendar-nav-btn:hover:not(:disabled) {
+    background-color: #f3f4f6;
+  }
+
+  .calendar-nav-btn:disabled {
+    color: #d1d5db;
+    cursor: not-allowed;
+  }
+
+  /* Calendar Days Grid */
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .calendar-weekday {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6b7280;
+    padding: 4px 0;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    text-align: center;
+  }
+
+  .calendar-cell {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 8px;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+
+  /* Available Date */
+  .calendar-cell.available {
+    background-color: #ffffff;
+    color: #222222;
+    cursor: pointer;
+  }
+
+  .calendar-cell.available:hover {
+    background-color: #f3f4f6;
+    transform: scale(1.05);
+  }
+
+  /* Booked Date */
+  .calendar-cell.booked {
+    background-color: #ffdcdb;
+    color: #222222;
+    cursor: not-allowed;
+    font-weight: 500;
+  }
+
+  /* Other Month Date */
+  .calendar-cell.other-month {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  /* Past Date */
+  .calendar-cell.past {
+    background-color: #fafafa;
+    color: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* User Selected Dates */
+  .calendar-cell.selected {
+    background-color: #fe424d !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(254, 66, 77, 0.4);
+    cursor: pointer;
+  }
+
+  .calendar-cell.in-range {
+    background-color: #ffe8e9 !important;
+    color: #fe424d !important;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* Legend */
+  .calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-indicator {
+    width: 20px;
+    height: 18px;
+    border-radius: 5px;
+    display: inline-block;
+  }
+
+  .legend-indicator.booked {
+    background-color: #ffdcdb;
+  }
+
+  .legend-indicator.available {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Form Section */
+  .form-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 1.75rem;
+  }
+
+  .booking-form .form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+  }
+
+  .booking-form .form-control {
+    border: 1px solid #d1d5db;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+    color: #111827;
+    border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .booking-form .form-control:focus {
+    border-color: #fe424d;
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.15);
+  }
+
+  .booking-form .form-control:disabled {
+    background-color: #f3f4f6;
+    color: #111827;
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  .btn-book-now {
+    background-color: #fe424d;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    padding: 0.85rem;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 4px 14px rgba(254, 66, 77, 0.25);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+
+  .btn-book-now:hover {
+    background-color: #e03a44;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  .btn-book-now:active {
+    transform: translateY(0);
+  }
+
+  .calendar-alert {
+    display: none;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    .booking-card {
+      padding: 1.25rem;
+    }
+
+    .calendar-cell {
+      height: 38px;
+      font-size: 0.85rem;
+    }
+
+    .calendar-legend {
+      gap: 16px;
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<div class="container booking-page-container">
+  <div class="row g-4 justify-content-center align-items-start">
+    
+    <!-- LEFT COLUMN: CALENDAR -->
+    <div class="col-12 col-lg-7">
+      <div class="booking-card">
+        
+        <!-- Header: Prev, Month & Year, Next -->
+        <div class="calendar-header">
+          <button type="button" class="calendar-nav-btn" id="prevMonthBtn" title="Previous Month">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          
+          <h5 class="calendar-title" id="calendarTitle">Month Year</h5>
+          
+          <button type="button" class="calendar-nav-btn" id="nextMonthBtn" title="Next Month">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Weekdays Header: Mon - Sun -->
+        <div class="calendar-weekdays">
+          <div class="calendar-weekday">Mon</div>
+          <div class="calendar-weekday">Tue</div>
+          <div class="calendar-weekday">Wed</div>
+          <div class="calendar-weekday">Thu</div>
+          <div class="calendar-weekday">Fri</div>
+          <div class="calendar-weekday">Sat</div>
+          <div class="calendar-weekday">Sun</div>
+        </div>
+
+        <!-- Days Grid -->
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Dynamically populated by JS -->
+        </div>
+
+        <!-- Inline Warning Alert for overlap attempts -->
+        <div class="alert alert-danger calendar-alert" id="calendarAlert" role="alert">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>
+          <span id="calendarAlertText">Selected dates include already booked days.</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="calendar-legend">
+          <div class="legend-item">
+            <span class="legend-indicator booked"></span>
+            <span>Booked (Not Available)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator available"></span>
+            <span>Available</span>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Check Out</label>
-      <input
-        type="date"
-        name="checkOut"
-        id="checkOut"
-        min="<%= new Date().toISOString().split('T')[0] %>"
-        class="form-control"
-        required
-      >
+    <!-- RIGHT COLUMN: BOOKING FORM & SUMMARY -->
+    <div class="col-12 col-lg-5">
+      <div class="booking-card">
+        
+        <h3 class="form-card-title">Book this listing :</h3>
+
+        <form method="POST" action="/listings/<%= listingId %>/book" id="bookingForm" class="booking-form">
+          
+          <!-- Check In -->
+          <div class="mb-3">
+            <label class="form-label" for="checkIn">Check In</label>
+            <input
+              type="date"
+              name="checkIn"
+              id="checkIn"
+              min="<%= new Date().toISOString().split('T')[0] %>"
+              class="form-control"
+              required
+            >
+          </div>
+
+          <!-- Check Out -->
+          <div class="mb-3">
+            <label class="form-label" for="checkOut">Check Out</label>
+            <input
+              type="date"
+              name="checkOut"
+              id="checkOut"
+              min="<%= new Date().toISOString().split('T')[0] %>"
+              class="form-control"
+              required
+            >
+          </div>
+
+          <!-- Total Price -->
+          <div class="mb-3">
+            <label class="form-label" for="totalPrice">Total Price</label>
+            <input
+              type="text"
+              id="totalPrice"
+              class="form-control"
+              value="₹ <%= listing.price.toLocaleString('en-IN') %>"
+              disabled
+              readonly
+            >
+            <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted" style="font-size: 0.85rem;" id="nightsBreakdown">
+              <span id="nightsCountText">0 nights selected</span>
+              <span id="ratePerNightText">₹ <%= listing.price.toLocaleString("en-IN") %> / night</span>
+            </div>
+          </div>
+
+          <!-- Hidden Price Per Night -->
+          <input
+            type="hidden"
+            name="pricePerNight"
+            id="pricePerNight"
+            value="<%= listing.price %>"
+          >
+
+          <!-- Book Now Button -->
+          <button
+            type="submit"
+            id="bookNowBtn"
+            class="btn btn-book-now w-100 mt-2"
+          >
+            BOOK NOW
+          </button>
+
+        </form>
+
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Total Price</label>
-      <input
-        type="text"
-        id="totalPrice"
-        class="form-control"
-        value="₹ <%= listing.price.toLocaleString('en-IN') %>"
-        disabled
-      >
-    </div>
-
-    <!-- Backend price calculate kar sake -->
-    <input
-      type="hidden"
-      name="pricePerNight"
-      value="<%= listing.price %>"
-    >
-
-    <button
-      type="submit"
-      class="btn w-100 mt-3"
-      style="
-        background-color:#fe424d;
-        color:white;
-        border:none;
-        padding:12px;
-        font-size:16px;
-        border-radius:30px;
-      "
-    >
-      BOOK NOW
-    </button>
-
-  </form>
+  </div>
 </div>
 
 <script>
+  window.addEventListener("DOMContentLoaded", function () {
+    // 1. Data from backend
+    const pricePerNight = Number("<%= listing.price %>");
+    
+    // Safely parse booked dates from backend
+    const bookedReservationsRaw = <%- JSON.stringify(
+      (bookedDates || []).map(b => ({
+        checkIn: b.checkIn,
+        checkOut: b.checkOut
+      }))
+    ) %>;
 
-window.onload = function () {
+    // Normalize booked reservations to "YYYY-MM-DD"
+    const bookedReservations = bookedReservationsRaw.map(b => {
+      const inDate = new Date(b.checkIn);
+      const outDate = new Date(b.checkOut);
+      return {
+        start: inDate.toISOString().split("T")[0],
+        end: outDate.toISOString().split("T")[0]
+      };
+    });
 
-  const pricePerNight = Number("<%= listing.price %>");
+    // 2. DOM Elements
+    const calendarTitle = document.getElementById("calendarTitle");
+    const calendarGrid = document.getElementById("calendarGrid");
+    const prevMonthBtn = document.getElementById("prevMonthBtn");
+    const nextMonthBtn = document.getElementById("nextMonthBtn");
+    const calendarAlert = document.getElementById("calendarAlert");
+    const calendarAlertText = document.getElementById("calendarAlertText");
 
-  const checkInInput = document.getElementById("checkIn");
-  const checkOutInput = document.getElementById("checkOut");
-  const totalPriceInput = document.getElementById("totalPrice");
+    const checkInInput = document.getElementById("checkIn");
+    const checkOutInput = document.getElementById("checkOut");
+    const totalPriceInput = document.getElementById("totalPrice");
+    const nightsCountText = document.getElementById("nightsCountText");
+    const bookingForm = document.getElementById("bookingForm");
 
-  function calculatePrice() {
+    // 3. Date & State variables
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
 
-    if (!checkInInput.value || !checkOutInput.value) {
-      totalPriceInput.value = "₹ 0";
-      return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+
+    // Current viewing month on calendar
+    let viewingYear = today.getFullYear();
+    let viewingMonth = today.getMonth(); // 0-indexed
+
+    // Selected dates (string format "YYYY-MM-DD")
+    let selectedCheckIn = checkInInput.value || null;
+    let selectedCheckOut = checkOutInput.value || null;
+
+    // Helper: format YYYY-MM-DD
+    function formatDateStr(y, m, d) {
+      const mm = String(m + 1).padStart(2, "0");
+      const dd = String(d).padStart(2, "0");
+      return `${y}-${mm}-${dd}`;
     }
 
-    const checkInDate = new Date(checkInInput.value);
-    const checkOutDate = new Date(checkOutInput.value);
-
-    if (checkOutDate <= checkInDate) {
-      totalPriceInput.value = "₹ 0";
-      return;
+    // Helper: check if a date falls into any booked reservation range
+    function isDateBooked(dateStr) {
+      for (const r of bookedReservations) {
+        if (dateStr >= r.start && dateStr <= r.end) {
+          return true;
+        }
+      }
+      return false;
     }
 
-    const days =
-      (checkOutDate - checkInDate) /
-      (1000 * 60 * 60 * 24);
+    // Helper: check if any booked date lies strictly between start and end
+    function hasBookedDatesBetween(startStr, endStr) {
+      const startDate = new Date(startStr);
+      const endDate = new Date(endStr);
+      const cur = new Date(startDate);
+      cur.setDate(cur.getDate() + 1);
 
-    const total = days * pricePerNight;
+      while (cur < endDate) {
+        const curStr = cur.toISOString().split("T")[0];
+        if (isDateBooked(curStr)) {
+          return true;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return false;
+    }
 
-    totalPriceInput.value =
-      `₹ ${total.toLocaleString("en-IN")}`;
-  }
+    // Show temporary warning
+    let alertTimeout = null;
+    function showAlert(msg) {
+      calendarAlertText.textContent = msg;
+      calendarAlert.style.display = "block";
+      if (alertTimeout) clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(() => {
+        calendarAlert.style.display = "none";
+      }, 4000);
+    }
 
-  checkInInput.addEventListener("change", calculatePrice);
-  checkOutInput.addEventListener("change", calculatePrice);
+    // 4. Price & Nights Calculation
+    function updatePriceAndSummary() {
+      if (!selectedCheckIn || !selectedCheckOut) {
+        totalPriceInput.value = `₹ ${pricePerNight.toLocaleString("en-IN")}`;
+        nightsCountText.textContent = selectedCheckIn ? "1 night minimum (select check-out)" : "0 nights selected";
+        return;
+      }
 
-};
+      const inDate = new Date(selectedCheckIn);
+      const outDate = new Date(selectedCheckOut);
 
+      const days = Math.round((outDate - inDate) / (1000 * 60 * 60 * 24));
+
+      if (days <= 0) {
+        totalPriceInput.value = "₹ 0";
+        nightsCountText.textContent = "Invalid date range";
+        return;
+      }
+
+      const total = days * pricePerNight;
+      totalPriceInput.value = `₹ ${total.toLocaleString("en-IN")}`;
+      nightsCountText.textContent = `${days} night${days > 1 ? "s" : ""} selected`;
+    }
+
+    // 5. Render Calendar Function
+    function renderCalendar() {
+      calendarTitle.textContent = `${monthNames[viewingMonth]} ${viewingYear}`;
+
+      // Disable prev month if viewing current month or past
+      const isCurrentOrPastMonth =
+        viewingYear < today.getFullYear() ||
+        (viewingYear === today.getFullYear() && viewingMonth <= today.getMonth());
+      prevMonthBtn.disabled = isCurrentOrPastMonth;
+
+      // Clear previous cells
+      calendarGrid.innerHTML = "";
+
+      // 1st day of month (0 = Sun, 1 = Mon, ..., 6 = Sat)
+      const firstDay = new Date(viewingYear, viewingMonth, 1);
+      // Monday-first index: Mon = 0, Tue = 1, ..., Sun = 6
+      const startDayIndex = (firstDay.getDay() + 6) % 7;
+
+      const daysInCurrentMonth = new Date(viewingYear, viewingMonth + 1, 0).getDate();
+      const daysInPrevMonth = new Date(viewingYear, viewingMonth, 0).getDate();
+
+      // A. Previous month overflow days
+      for (let i = startDayIndex - 1; i >= 0; i--) {
+        const dayNum = daysInPrevMonth - i;
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell other-month";
+        cell.textContent = dayNum;
+        calendarGrid.appendChild(cell);
+      }
+
+      // B. Current month days
+      for (let d = 1; d <= daysInCurrentMonth; d++) {
+        const dateStr = formatDateStr(viewingYear, viewingMonth, d);
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell";
+        cell.textContent = d;
+        cell.dataset.date = dateStr;
+
+        const isPast = dateStr < todayStr;
+        const isBooked = isDateBooked(dateStr);
+        const isCheckIn = dateStr === selectedCheckIn;
+        const isCheckOut = dateStr === selectedCheckOut;
+        const isInRange =
+          selectedCheckIn &&
+          selectedCheckOut &&
+          dateStr > selectedCheckIn &&
+          dateStr < selectedCheckOut;
+
+        if (isBooked) {
+          cell.classList.add("booked");
+          cell.title = "Booked (Not Available)";
+        } else if (isPast) {
+          cell.classList.add("past");
+          cell.title = "Past date";
+        } else if (isCheckIn || isCheckOut) {
+          cell.classList.add("selected");
+          if (isCheckIn) cell.title = "Check-In Date";
+          if (isCheckOut) cell.title = "Check-Out Date";
+        } else if (isInRange) {
+          cell.classList.add("in-range");
+          cell.title = "Selected Range";
+        } else {
+          cell.classList.add("available");
+          cell.title = "Available";
+        }
+
+        // Click handler for selectable cells
+        cell.addEventListener("click", () => handleDateClick(dateStr, isBooked, isPast));
+
+        calendarGrid.appendChild(cell);
+      }
+
+      // C. Next month overflow days (fill out remaining cells to complete grid)
+      const totalCells = startDayIndex + daysInCurrentMonth;
+      const targetRows = totalCells <= 35 ? 35 : 42;
+      const remainingCells = targetRows - totalCells;
+
+      for (let nextD = 1; nextD <= remainingCells; nextD++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell other-month";
+        cell.textContent = nextD;
+        calendarGrid.appendChild(cell);
+      }
+    }
+
+    // 6. Handle Date Click on Calendar
+    function handleDateClick(dateStr, isBooked, isPast) {
+      if (isPast) return;
+      if (isBooked) {
+        showAlert("That date is already booked and cannot be selected.");
+        return;
+      }
+
+      // Scenario 1: No Check-In yet, OR both Check-In and Check-Out are already set -> start fresh
+      if (!selectedCheckIn || (selectedCheckIn && selectedCheckOut)) {
+        selectedCheckIn = dateStr;
+        selectedCheckOut = null;
+        checkInInput.value = dateStr;
+        checkOutInput.value = "";
+        checkOutInput.min = dateStr;
+      } 
+      // Scenario 2: Check-In is set, selecting Check-Out
+      else if (selectedCheckIn && !selectedCheckOut) {
+        // If user clicked earlier date or same date, reset Check-In to clicked date
+        if (dateStr <= selectedCheckIn) {
+          selectedCheckIn = dateStr;
+          selectedCheckOut = null;
+          checkInInput.value = dateStr;
+          checkOutInput.value = "";
+          checkOutInput.min = dateStr;
+        } else {
+          // Check if any booked dates are in the range
+          if (hasBookedDatesBetween(selectedCheckIn, dateStr)) {
+            showAlert("Cannot book a range that includes already booked dates.");
+            selectedCheckIn = dateStr;
+            selectedCheckOut = null;
+            checkInInput.value = dateStr;
+            checkOutInput.value = "";
+            checkOutInput.min = dateStr;
+          } else {
+            // Valid range selection
+            selectedCheckOut = dateStr;
+            checkOutInput.value = dateStr;
+          }
+        }
+      }
+
+      updatePriceAndSummary();
+      renderCalendar();
+    }
+
+    // 7. Navigation Listeners
+    prevMonthBtn.addEventListener("click", () => {
+      viewingMonth--;
+      if (viewingMonth < 0) {
+        viewingMonth = 11;
+        viewingYear--;
+      }
+      renderCalendar();
+    });
+
+    nextMonthBtn.addEventListener("click", () => {
+      viewingMonth++;
+      if (viewingMonth > 11) {
+        viewingMonth = 0;
+        viewingYear++;
+      }
+      renderCalendar();
+    });
+
+    // 8. Sync Input Field Changes with Calendar
+    checkInInput.addEventListener("change", function () {
+      const val = this.value;
+      if (!val) {
+        selectedCheckIn = null;
+        renderCalendar();
+        updatePriceAndSummary();
+        return;
+      }
+
+      if (isDateBooked(val)) {
+        showAlert("Selected Check-In date is already booked.");
+        this.value = "";
+        selectedCheckIn = null;
+      } else {
+        selectedCheckIn = val;
+        checkOutInput.min = val;
+        if (selectedCheckOut && selectedCheckOut <= selectedCheckIn) {
+          selectedCheckOut = null;
+          checkOutInput.value = "";
+        }
+        if (selectedCheckOut && hasBookedDatesBetween(selectedCheckIn, selectedCheckOut)) {
+          showAlert("Selected range contains booked dates. Check-Out reset.");
+          selectedCheckOut = null;
+          checkOutInput.value = "";
+        }
+      }
+
+      renderCalendar();
+      updatePriceAndSummary();
+    });
+
+    checkOutInput.addEventListener("change", function () {
+      const val = this.value;
+      if (!val) {
+        selectedCheckOut = null;
+        renderCalendar();
+        updatePriceAndSummary();
+        return;
+      }
+
+      if (isDateBooked(val)) {
+        showAlert("Selected Check-Out date is already booked.");
+        this.value = "";
+        selectedCheckOut = null;
+      } else if (selectedCheckIn && val <= selectedCheckIn) {
+        showAlert("Check-Out date must be after Check-In date.");
+        this.value = "";
+        selectedCheckOut = null;
+      } else if (selectedCheckIn && hasBookedDatesBetween(selectedCheckIn, val)) {
+        showAlert("Selected range contains booked dates.");
+        this.value = "";
+        selectedCheckOut = null;
+      } else {
+        selectedCheckOut = val;
+      }
+
+      renderCalendar();
+      updatePriceAndSummary();
+    });
+
+    // 9. Form Submission Validation
+    bookingForm.addEventListener("submit", function (e) {
+      if (!checkInInput.value || !checkOutInput.value) {
+        e.preventDefault();
+        showAlert("Please select both Check-In and Check-Out dates.");
+        return;
+      }
+
+      if (checkOutInput.value <= checkInInput.value) {
+        e.preventDefault();
+        showAlert("Check-Out date must be after Check-In date.");
+        return;
+      }
+
+      if (isDateBooked(checkInInput.value) || isDateBooked(checkOutInput.value)) {
+        e.preventDefault();
+        showAlert("One of the selected dates is already booked.");
+        return;
+      }
+
+      if (hasBookedDatesBetween(checkInInput.value, checkOutInput.value)) {
+        e.preventDefault();
+        showAlert("The selected date range spans across already booked dates.");
+        return;
+      }
+    });
+
+    // Initial render
+    renderCalendar();
+    updatePriceAndSummary();
+  });
 </script>

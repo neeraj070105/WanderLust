@@ -159,9 +159,11 @@ app.get("/offers/inbox", async (req, res) => {
       return res.redirect("/login");
     }
 
-    const offers = await Offer.find({ owner: req.user._id })
+    let offers = await Offer.find({ owner: req.user._id })
       .populate("listing")
       .populate("buyer");
+
+    offers = offers.filter((offer) => offer.listing);
 
     res.render("offers/inbox", { offers });
 
@@ -216,8 +218,10 @@ app.get("/offers/myOffers", async (req, res) => {
     return res.redirect("/login");
   }
 
-  const myOffers = await Offer.find({ buyer: req.user._id })
+  let myOffers = await Offer.find({ buyer: req.user._id })
     .populate("listing");
+
+  myOffers = myOffers.filter((offer) => offer.listing);
 
   res.render("offers/myOffers.ejs", { myOffers });
 });
